@@ -1,0 +1,15 @@
+use strict;
+use warnings;
+
+dump_isa( shift );
+
+sub dump_isa {
+    my ($module, $depth) = @_;
+    $depth ||= 0;
+    no strict 'refs';
+    eval "use $module; 1" or die $@;
+    print '  ' x $depth, $module, "\n";
+    for my $mod (@{"$module\::ISA"}) {
+        dump_isa( $mod, $depth + 1);
+    }
+}
