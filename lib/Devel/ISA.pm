@@ -1,7 +1,7 @@
 package # hide package name from indexer
   DB;
 
-# allow -d:TraceUse loading
+# allow -d:ISA loading
 sub DB {}
 
 package Devel::ISA;
@@ -11,7 +11,30 @@ use warnings;
 
 our $VERSION = '1.00';
 
+my @roots;
+
+# Executes the END block only if loaded from the command-line
+# with -d:ISA or -MDevel::ISA (in those cases the line number is 0)
+our $do_END = ! (caller)[2];
+
+
+sub import
+{
+    # Import functions only if imported from script/module
+    # We could be imported from multiple places so we must not rely on !$do_END
+    if ((caller)[2]) {
+        splice @_, 1;
+        our @EXPORT = ('ISA_tree');
+	require Exporter;
+        goto &Exporter::import;
+    } else {
+        # TODO: parse arguments for running END
+    }
+}
+
 END {
+    return unless $do_END;
+
     my $isa = ISA_tree('');
 
     # get all children that are not parents
